@@ -8,7 +8,7 @@ The example here is a HashMap-as-a-Service
 
 # Example Service Usage
 
-In [main.rs](main.rs), the example service and its configuration are instantiated and started.
+In [main.rs](src/main.rs), the example service and its configuration are instantiated and started.
 
 ```rust
 let service = ExampleService {};
@@ -26,7 +26,9 @@ Two tokio tasks kick off that will both use the service. The general flow when c
 * Thread 2 sets the key
 * Thread 1 reads again, gets the result
 
-The implementation of those threads are boring, the interesting bits are the functions that are actually using the handle directly.
+The implementations of those threads are mostly boring, though it it's worth noting that `client.clone()` is what makes it easy to share access to the service among threads.
+
+The more interesting bits are the functions that are actually using the handle directly.
 
 The `get_test_key` function is using the "client" interface of the service. The `ExampleRequest` enumeration is the interface to the worker, it provides a simple and flexible structure for this usage pattern. I use the `Get` command and check the response which similarly uses an `ExampleResponse` enumeration for the asynchronous replies from the worker.
 
@@ -59,8 +61,10 @@ Littered across 6 files as if I was an enterprise software developer, are the co
 
 `request.rs` contains the request structure, obviously! This is the interface between "client" and "server"
 
-`response.rs` coincidentally has the reponse structure, and now I'm regretting how modular I made this example... but I do think this would be nice for more complex services
+`response.rs` coincidentally has the response structure, and now I'm regretting how modular I made this example... but I do think this would be nice for more complex services
 
 `service.rs` this file has a simple struct that represents The Service. The `impl TenoriteService<spam>` duct tapes it all together
 
 `task.rs` this is the *actual* worker! It implements `TenoriteTask<spam>` on a struct that has an async `task(receiver, config)` method. `config` is an instance of the structure that owns the `HashMap` and `receiver` is the tokio `mpsc` receiver to read requests from. In this case it matches through the requests and HashMaps as a service!
+
+This side of the system is very likely to change, hopefully to further simplify building this pattern, and possibly also to add some useful features.
