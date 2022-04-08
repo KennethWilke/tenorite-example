@@ -2,14 +2,15 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use tenorite::{TenoriteService, TenoriteClient};
+use tenorite::{TenoriteClient, TenoriteService};
 use tenorite_example::*;
-
 
 #[tokio::main]
 async fn main() {
-    let service = ExampleService{};
-    let config = ExampleTaskConfig{data: HashMap::new()};
+    let service = ExampleService {};
+    let config = ExampleTaskConfig {
+        data: HashMap::new(),
+    };
     let (task, client) = service.start_task(32, config);
 
     let thread1_client = client.clone();
@@ -19,7 +20,7 @@ async fn main() {
         match get_test_key(thread1_client.clone()).await {
             Some(value) => {
                 println!("[Thread 1] Received Value '{}'", value)
-            },
+            }
             None => {
                 println!("[Thread 1] Received Empty Value")
             }
@@ -31,7 +32,7 @@ async fn main() {
         match get_test_key(thread1_client).await {
             Some(value) => {
                 println!("[Thread 1] Received Value '{}'", value)
-            },
+            }
             None => {
                 println!("[Thread 1] Received Empty Value")
             }
@@ -55,22 +56,24 @@ async fn main() {
 async fn set_test_key(mut client: TenoriteClient<ExampleRequest, ExampleResponse, ExampleError>) {
     let key = "test".to_string();
     let value = "weeee".to_string();
-    let request = ExampleRequest::Set{key, value};
+    let request = ExampleRequest::Set { key, value };
     match client.send_request(request).await {
         Err(_error) => {
             eprintln!("error setting test key!");
-        },
+        }
         _ => {}
     }
 }
 
-async fn get_test_key(mut client: TenoriteClient<ExampleRequest, ExampleResponse, ExampleError>) -> Option<String> {
+async fn get_test_key(
+    mut client: TenoriteClient<ExampleRequest, ExampleResponse, ExampleError>,
+) -> Option<String> {
     let key = "test".to_string();
-    let request = ExampleRequest::Get{key};
+    let request = ExampleRequest::Get { key };
     match client.send_request(request).await {
         Ok(response) => match response {
             ExampleResponse::StringResponse(value) => Some(value),
-            ExampleResponse::EmptyResponse => None
+            ExampleResponse::EmptyResponse => None,
         },
         Err(_error) => {
             eprintln!("error setting test key!");
