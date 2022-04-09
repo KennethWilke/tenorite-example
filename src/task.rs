@@ -1,11 +1,11 @@
-use tenorite::{async_trait, TenoriteRequest, TenoriteTask};
+use tenorite::{async_trait, TenoriteRequest, TenoriteWorker};
 
 use crate::{ExampleError, ExampleRequest, ExampleResponse, ExampleTaskConfig};
 
 pub struct ExampleTask {}
 
 #[async_trait]
-impl TenoriteTask<ExampleRequest, ExampleResponse, ExampleError, ExampleTaskConfig>
+impl TenoriteWorker<ExampleRequest, ExampleResponse, ExampleError, ExampleTaskConfig>
     for ExampleTask
 {
     async fn task(

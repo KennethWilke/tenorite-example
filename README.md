@@ -15,10 +15,10 @@ let service = ExampleService {};
 let config = ExampleTaskConfig {
     data: HashMap::new(),
 };
-let (task, client) = service.start_task(32, config);
+let (task, caller) = service.start_task(32, config);
 ```
 
-`task` is a `JoinHandle<()>` for the underlying service thread, `client` is a `TenoriteClient` that provides a handle that can be cloned to share among multiple threads.
+`task` is a `JoinHandle<()>` for the underlying service thread, `caller` is a `TenoriteCaller` that provides a handle that can be cloned to share among multiple threads.
 
 Two tokio tasks kick off that will both use the service. The general flow when combined is:
 
@@ -26,7 +26,7 @@ Two tokio tasks kick off that will both use the service. The general flow when c
 * Thread 2 sets the key
 * Thread 1 reads again, gets the result
 
-The implementations of those threads are mostly boring, though it it's worth noting that `client.clone()` is what makes it easy to share access to the service among threads.
+The implementations of those threads are mostly boring, though it it's worth noting that `caller.clone()` is what makes it easy to share access to the service among threads.
 
 The more interesting bits are the functions that are actually using the handle directly.
 
@@ -35,7 +35,7 @@ The `get_test_key` function is using the "client" interface of the service. The 
 ```rust
 let key = "test".to_string();
 let request = ExampleRequest::Get { key };
-match client.send_request(request).await {
+match caller.send_request(request).await {
     Ok(response) => match response {
         ExampleResponse::StringResponse(value) => Some(value),
         ExampleResponse::EmptyResponse => None,
@@ -65,6 +65,6 @@ Littered across 6 files as if I was an enterprise software developer, are the co
 
 `service.rs` this file has a simple struct that represents The Service. The `impl TenoriteService<spam>` duct tapes it all together
 
-`task.rs` this is the *actual* worker! It implements `TenoriteTask<spam>` on a struct that has an async `task(receiver, config)` method. `config` is an instance of the structure that owns the `HashMap` and `receiver` is the tokio `mpsc` receiver to read requests from. In this case it matches through the requests and HashMaps as a service!
+`worker.rs` this is the *actual* worker! It implements `TenoriteWorker<spam>` on a struct that has an async `task(receiver, config)` method. `config` is an instance of the structure that owns the `HashMap` and `receiver` is the tokio `mpsc` receiver to read requests from. In this case it matches through the requests and HashMaps as a service!
 
 This side of the system is very likely to change, hopefully to further simplify building this pattern, and possibly also to add some useful features.
