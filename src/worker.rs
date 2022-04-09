@@ -1,18 +1,18 @@
 use tenorite::{async_trait, TenoriteRequest, TenoriteWorker};
 
-use crate::{ExampleError, ExampleRequest, ExampleResponse, ExampleTaskConfig};
+use crate::{ExampleConfig, ExampleError, ExampleRequest, ExampleResponse};
 
-pub struct ExampleTask {}
+pub struct ExampleWorker {}
 
 #[async_trait]
-impl TenoriteWorker<ExampleRequest, ExampleResponse, ExampleError, ExampleTaskConfig>
-    for ExampleTask
+impl TenoriteWorker<ExampleRequest, ExampleResponse, ExampleError, ExampleConfig>
+    for ExampleWorker
 {
     async fn task(
         mut receiver: tenorite::Receiver<
             TenoriteRequest<ExampleRequest, ExampleResponse, ExampleError>,
         >,
-        mut config: ExampleTaskConfig,
+        mut config: ExampleConfig,
     ) {
         println!("[ExampleTask] Task Started");
 
@@ -24,19 +24,19 @@ impl TenoriteWorker<ExampleRequest, ExampleResponse, ExampleError, ExampleTaskCo
             let response = match request.request {
                 Set { key, value } => {
                     config.data.insert(key, value);
-                    EmptyResponse
+                    Ok(EmptyResponse)
                 }
                 Get { key } => match config.data.get(&key) {
-                    Some(value) => StringResponse(value.to_string()),
-                    None => EmptyResponse,
+                    Some(value) => Ok(StringResponse(value.to_string())),
+                    None => Err(ExampleError::InvalidKey(key)),
                 },
-                Delete { key } => {
-                    config.data.remove(&key);
-                    EmptyResponse
-                }
+                Delete { key } => match config.data.remove(&key) {
+                    Some(_) => Ok(EmptyResponse),
+                    None => Err(ExampleError::InvalidKey(key)),
+                },
             };
 
-            match request.client.send(Ok(response)) {
+            match request.client.send(response) {
                 Err(_result) => {
                     panic!("Error!!!!!")
                 }

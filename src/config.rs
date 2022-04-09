@@ -1,5 +1,5 @@
 use std::collections::HashMap;
 
-pub struct ExampleTaskConfig {
+pub struct ExampleConfig {
     pub data: HashMap<String, String>,
 }

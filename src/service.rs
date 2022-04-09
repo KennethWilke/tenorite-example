@@ -1,10 +1,10 @@
 use tenorite::TenoriteService;
 
-use crate::{ExampleError, ExampleRequest, ExampleResponse, ExampleTask, ExampleTaskConfig};
+use crate::{ExampleConfig, ExampleError, ExampleRequest, ExampleResponse, ExampleWorker};
 
 pub struct ExampleService {}
 
-impl TenoriteService<ExampleRequest, ExampleResponse, ExampleError, ExampleTask, ExampleTaskConfig>
+impl TenoriteService<ExampleRequest, ExampleResponse, ExampleError, ExampleWorker, ExampleConfig>
     for ExampleService
 {
 }

@@ -12,7 +12,7 @@ In [main.rs](src/main.rs), the example service and its configuration are instant
 
 ```rust
 let service = ExampleService {};
-let config = ExampleTaskConfig {
+let config = ExampleConfig {
     data: HashMap::new(),
 };
 let (task, caller) = service.start_task(32, config);

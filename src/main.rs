@@ -2,13 +2,13 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use tenorite::{TenoriteCaller, TenoriteService};
+use tenorite::{TenoriteCaller, TenoriteError, TenoriteService};
 use tenorite_example::*;
 
 #[tokio::main]
 async fn main() {
     let service = ExampleService {};
-    let config = ExampleTaskConfig {
+    let config = ExampleConfig {
         data: HashMap::new(),
     };
     let (task, caller) = service.start_task(32, config);
@@ -59,7 +59,7 @@ async fn set_test_key(mut caller: TenoriteCaller<ExampleRequest, ExampleResponse
     let request = ExampleRequest::Set { key, value };
     match caller.send_request(request).await {
         Err(_error) => {
-            eprintln!("error setting test key!");
+            println!("Error setting test key")
         }
         _ => {}
     }
@@ -75,8 +75,12 @@ async fn get_test_key(
             ExampleResponse::StringResponse(value) => Some(value),
             ExampleResponse::EmptyResponse => None,
         },
-        Err(_error) => {
-            eprintln!("error setting test key!");
+        Err(TenoriteError::ServiceError(ExampleError::InvalidKey(key))) => {
+            println!("Service error: Get operation on unset key {}", key);
+            None
+        }
+        _ => {
+            println!("Error getting test key");
             None
         }
     }

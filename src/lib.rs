@@ -3,11 +3,11 @@ mod error;
 mod request;
 mod response;
 mod service;
-mod task;
+mod worker;
 
-pub use config::ExampleTaskConfig;
+pub use config::ExampleConfig;
 pub use error::ExampleError;
 pub use request::ExampleRequest;
 pub use response::ExampleResponse;
 pub use service::ExampleService;
-pub use task::ExampleTask;
+pub use worker::ExampleWorker;
